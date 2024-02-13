@@ -38,5 +38,7 @@ jobs:
         with:
           context: service.auth
           file: service.auth/docker/Dockerfile
+          build-args:
+            - "IMAGE_SOURCE='https://github.com/${{github.repository}}'"
           push: true
           tags: ghcr.io/${{env.REPO_LOWER}}/auth-service:latest
