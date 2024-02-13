@@ -22,6 +22,8 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: "service.auth/go.mod"
+          cache-dependency-path: |
+            service.auth/go.sum
       - name: install dependencies
         run: go mod download
       - name: build static binary
