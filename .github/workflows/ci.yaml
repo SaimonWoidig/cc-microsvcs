@@ -1,0 +1,42 @@
+name: CI/CD
+run-name: "Run ${{github.run_id}}, triggered by ${{github.actor}}"
+on:
+  push: { branches: main }
+  workflow_dispatch: {}
+permissions:
+  packages: write
+jobs:
+  build-auth-service:
+    name: build auth service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: service.auth
+    env:
+      # will be overwritten in step "repo name lowercase"
+      REPO_LOWER: ""
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "service.auth/go.mod"
+      - name: install dependencies
+        run: go mod download
+      - name: build static binary
+        run: go build -v -ldflags "-v -s -w -extldflags '-static'" -tags "osusergo,netgo" -trimpath -o dist/cc-auth-service .
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io/${{github.repository}}
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+      - name: repo name lowercase
+        run: echo "REPO_LOWER=$(echo "${{github.repository}}" | tr '[:upper:]' '[:lower:]')" >> ${GITHUB_ENV}
+      - name: push image
+        uses: docker/build-push-action@v5
+        with:
+          context: service.auth
+          file: service.auth/docker/Dockerfile
+          push: true
+          tags: ghcr.io/${{env.REPO_LOWER}}/auth-service:latest
