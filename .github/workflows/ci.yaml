@@ -16,10 +16,10 @@ jobs:
       # will be overwritten in step "repo name lowercase"
       REPO_LOWER: ""
     steps:
-      - name: repo name lowercase
-        run: echo "REPO_LOWER=$(echo "${{github.repository}}" | tr '[:upper:]' '[:lower:]')" >> ${GITHUB_ENV}
       - name: checkout
         uses: actions/checkout@v4
+      - name: repo name lowercase
+        run: echo "REPO_LOWER=$(echo "${{github.repository}}" | tr '[:upper:]' '[:lower:]')" >> ${GITHUB_ENV}
       - name: setup go
         uses: actions/setup-go@v5
         with:
