@@ -29,7 +29,7 @@ jobs:
       - name: install dependencies
         run: go mod download
       - name: build static binary
-        run: go build -v -ldflags "-v -s -w -extldflags '-static'" -tags "osusergo,netgo" -trimpath -o dist/cc-auth-service ./cmd
+        run: go build -v -ldflags "-v -s -w -extldflags '-static'" -tags "osusergo,netgo" -trimpath -o dist/cc-auth-service .
       - name: login to ghcr
         uses: docker/login-action@v3
         with:
