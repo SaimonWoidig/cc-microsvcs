@@ -1,5 +1,5 @@
 run-service.auth:
-	go run ./service.auth/cmd
+	cd service.auth && go run . && cd -
 
 build-service.auth:
 	go build -o dist/cc-service-auth ./service.auth/cmd

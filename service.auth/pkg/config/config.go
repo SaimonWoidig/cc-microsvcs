@@ -6,18 +6,21 @@ type LoggingConfig struct {
 }
 
 type TracingConfig struct {
-	OTLPEndpoint  string  `mapstructure:"otlpEndpoint"`
-	SamplingRatio float64 `mapstructure:"samplingRatio"`
+	OTLPEndpoint         string  `mapstructure:"otlpEndpoint"`
+	ExportTimeoutSeconds int     `mapstructure:"exportTimeoutSeconds"`
+	SamplingRatio        float64 `mapstructure:"samplingRatio"`
 }
 type MetricsConfig struct {
 	OTLPEndpoint            string `mapstructure:"otlpEndpoint"`
-	RequestTimeoutSeconds   int    `mapstructure:"requestTimeout"`
-	ExportIntervalSeconds   int    `mapstructure:"exportInterval"`
-	MemStatsIntervalSeconds int    `mapstructure:"memStatsInterval"`
+	ExportTimeoutSeconds    int    `mapstructure:"exportTimeoutSeconds"`
+	ExportIntervalSeconds   int    `mapstructure:"exportIntervalSeconds"`
+	MemStatsIntervalSeconds int    `mapstructure:"memStatsIntervalSeconds"`
 }
 type LogsConfig struct {
-	OTLPEndpoint string `mapstructure:"otlpEndpoint"`
-	LogLevel     string `mapstructure:"logLevel"`
+	OTLPEndpoint         string `mapstructure:"otlpEndpoint"`
+	ExportTimeoutSeconds int    `mapstructure:"exportTimeoutSeconds"`
+	BatchTimeoutSeconds  int    `mapstructure:"batchTimeoutSeconds"`
+	LogLevel             string `mapstructure:"logLevel"`
 }
 
 type TelemetryConfig struct {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/agoda-com/opentelemetry-logs-go/logs"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/trace"
@@ -43,23 +44,29 @@ func NewContainer() *Container {
 	c.Logger = initLogger(c.Config.Logging.LogLevel, c.Config.Logging.Pretty)
 	c.Logger.Info("base logger initialized")
 
+	otel.SetErrorHandler(commonotel.NewOtelSlogErrorHandler(c.Logger))
 	iid := uuid.New().String()
-	res, err := initResource(iid)
+	res, err := initResource(iid, c.Config.Server.Addr, c.Config.Server.Port)
 	if err != nil {
 		panic(err.Error())
 	}
 	c.Resource = res
-	tp, err := initOtelTracing(c.Resource, c.Config.Telemetry.Tracing.OTLPEndpoint, c.Config.Telemetry.Tracing.SamplingRatio)
+	tp, err := initOtelTracing(
+		c.Resource,
+		c.Config.Telemetry.Tracing.OTLPEndpoint,
+		c.Config.Telemetry.Tracing.ExportTimeoutSeconds,
+		c.Config.Telemetry.Tracing.SamplingRatio,
+	)
 	if err != nil {
 		panic(err.Error())
 	}
 	c.TracerProvider = tp
-	mp, err := initOtelMetrics(c.Resource, c.Config.Telemetry.Metrics.OTLPEndpoint, c.Config.Telemetry.Metrics.RequestTimeoutSeconds, c.Config.Telemetry.Metrics.ExportIntervalSeconds, c.Config.Telemetry.Metrics.MemStatsIntervalSeconds)
+	mp, err := initOtelMetrics(c.Resource, c.Config.Telemetry.Metrics.OTLPEndpoint, c.Config.Telemetry.Metrics.ExportTimeoutSeconds, c.Config.Telemetry.Metrics.ExportIntervalSeconds, c.Config.Telemetry.Metrics.MemStatsIntervalSeconds)
 	if err != nil {
 		panic(err.Error())
 	}
 	c.MeterProvider = mp
-	lp, err := initOtelLogging(c.Resource, c.Config.Telemetry.Logging.OTLPEndpoint)
+	lp, err := initOtelLogging(c.Resource, c.Config.Telemetry.Logging.OTLPEndpoint, c.Config.Telemetry.Logging.ExportTimeoutSeconds, c.Config.Telemetry.Logging.BatchTimeoutSeconds)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -92,20 +99,21 @@ func initLogger(logLevel string, pretty bool) *slog.Logger {
 	return l
 }
 
-func initResource(instanceID string) (*resource.Resource, error) {
+func initResource(instanceID string, serverAddr string, serverPort int) (*resource.Resource, error) {
 	return commonotel.NewResource(context.Background(), commonotel.ResourceConfig{
 		Name:       AppName,
 		Version:    "1.0.0",
 		InstanceID: instanceID,
-		Addr:       "",
-		Port:       0,
+		Addr:       serverAddr,
+		Port:       serverPort,
 	})
 }
 
-func initOtelTracing(resource *resource.Resource, otlpEndpoint string, samplingRatio float64) (trace.TracerProvider, error) {
+func initOtelTracing(resource *resource.Resource, otlpEndpoint string, exportTimeoutSeconds int, samplingRatio float64) (trace.TracerProvider, error) {
 	traceExporter, err := oteltracing.NewOTLPTraceExporter(
 		context.Background(),
 		otlpEndpoint,
+		time.Duration(exportTimeoutSeconds)*time.Second,
 	)
 	if err != nil {
 		return nil, err
@@ -122,11 +130,11 @@ func initOtelTracing(resource *resource.Resource, otlpEndpoint string, samplingR
 	return tp, nil
 }
 
-func initOtelMetrics(resource *resource.Resource, otlpEndpoint string, requestTimeoutSeconds, exportIntervalSeconds, memStatsIntervalSeconds int) (metric.MeterProvider, error) {
+func initOtelMetrics(resource *resource.Resource, otlpEndpoint string, exportTimeoutSeconds, exportIntervalSeconds, memStatsIntervalSeconds int) (metric.MeterProvider, error) {
 	metricExporter, err := otelmetrics.NewOTLPMetricExporter(
 		context.Background(),
 		otlpEndpoint,
-		time.Second*time.Duration(requestTimeoutSeconds),
+		time.Duration(exportTimeoutSeconds)*time.Second,
 	)
 	if err != nil {
 		return nil, err
@@ -134,8 +142,8 @@ func initOtelMetrics(resource *resource.Resource, otlpEndpoint string, requestTi
 	mp, err := otelmetrics.NewMeterProvider(
 		resource,
 		metricExporter,
-		time.Second*time.Duration(exportIntervalSeconds),
-		time.Second*time.Duration(memStatsIntervalSeconds),
+		time.Duration(exportIntervalSeconds)*time.Second,
+		time.Duration(memStatsIntervalSeconds)*time.Second,
 	)
 	if err != nil {
 		return nil, err
@@ -143,12 +151,20 @@ func initOtelMetrics(resource *resource.Resource, otlpEndpoint string, requestTi
 	return mp, nil
 }
 
-func initOtelLogging(resource *resource.Resource, otlpEndpoint string) (logs.LoggerProvider, error) {
-	logExporter, err := otellogging.NewOTLPLogsExporter(context.Background(), otlpEndpoint)
+func initOtelLogging(resource *resource.Resource, otlpEndpoint string, exportTimeoutSeconds, batchTimeoutSeconds int) (logs.LoggerProvider, error) {
+	logExporter, err := otellogging.NewOTLPLogsExporter(
+		context.Background(),
+		otlpEndpoint,
+		time.Duration(exportTimeoutSeconds)*time.Second,
+	)
 	if err != nil {
 		return nil, err
 	}
-	lp, err := otellogging.NewLogProvider(resource, logExporter)
+	lp, err := otellogging.NewLogProvider(
+		resource,
+		logExporter,
+		time.Duration(batchTimeoutSeconds)*time.Second,
+	)
 	if err != nil {
 		return nil, err
 	}

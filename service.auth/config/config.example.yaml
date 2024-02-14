@@ -1,0 +1,20 @@
+logging:
+  logLevel: "info"
+  pretty: false
+telemetry:
+  tracing:
+    otlpEndpoint: "otlp:4318"
+    exportTimeoutSeconds: 3
+    samplingRatio: 1.0
+  metrics:
+    otlpEndpoint: "otlp:4318"
+    exportIntervalSeconds: 60
+    memStatsIntervalSeconds: 30
+  logs:
+    otlpEndpoint: "otlp:4318"
+    exportTimeoutSeconds: 3
+    batchTimeoutSeconds: 30
+    logLevel: "info"
+server:
+  addr: "example.com/service/auth"
+  port: 8080

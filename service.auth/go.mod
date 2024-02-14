@@ -6,6 +6,7 @@ require (
 	github.com/SaimonWoidig/cc-microsvcs/common v0.0.0-20240213194432-d6ec22299218
 	github.com/agoda-com/opentelemetry-logs-go v0.4.3
 	github.com/google/uuid v1.6.0
+	go.opentelemetry.io/otel v1.23.1
 	go.opentelemetry.io/otel/metric v1.23.1
 	go.opentelemetry.io/otel/sdk v1.23.1
 	go.opentelemetry.io/otel/trace v1.23.1
@@ -50,7 +51,6 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.3 // indirect
 	go.opentelemetry.io/contrib/instrumentation/host v0.48.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.48.0 // indirect
-	go.opentelemetry.io/otel v1.23.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.23.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.23.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.23.1 // indirect
