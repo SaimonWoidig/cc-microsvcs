@@ -1,5 +1,5 @@
-github.com/SaimonWoidig/cc-microsvcs/common v0.0.0-20240213194432-d6ec22299218 h1:mGvEGKreC/NLNNajGm1YrgLNlKqwFQ248/qk3AgOUCU=
-github.com/SaimonWoidig/cc-microsvcs/common v0.0.0-20240213194432-d6ec22299218/go.mod h1:WxQk7FLrxzsKKL1zav5oHdA8+E8NWDeolhUmUH9uFdw=
+github.com/SaimonWoidig/cc-microsvcs/common v0.0.0-20240214210434-aca82c6763a4 h1:ylTUO7wEphIRuPPg4vAp+6jr0Pp2cTqW1trIZSuhFxs=
+github.com/SaimonWoidig/cc-microsvcs/common v0.0.0-20240214210434-aca82c6763a4/go.mod h1:WxQk7FLrxzsKKL1zav5oHdA8+E8NWDeolhUmUH9uFdw=
 github.com/agoda-com/opentelemetry-go/otelslog v0.1.1 h1:6nV8PZCzySHuh9kP/HZ2OJqGucwQiM+yZRugKDvtzj4=
 github.com/agoda-com/opentelemetry-go/otelslog v0.1.1/go.mod h1:CSc0veIcY/HsIfH7l5PGtIpRvBttk09QUQlweVkD2PI=
 github.com/agoda-com/opentelemetry-logs-go v0.4.3 h1:dYAx/q9di+/Pv6HuGq59DFIOjqKT0LTy3PYTIz8ccq8=

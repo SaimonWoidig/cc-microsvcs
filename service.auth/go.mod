@@ -3,7 +3,7 @@ module github.com/SaimonWoidig/cc-microsvcs/service.auth
 go 1.21.6
 
 require (
-	github.com/SaimonWoidig/cc-microsvcs/common v0.0.0-20240213194432-d6ec22299218
+	github.com/SaimonWoidig/cc-microsvcs/common v0.0.0-20240214210434-aca82c6763a4
 	github.com/agoda-com/opentelemetry-logs-go v0.4.3
 	github.com/google/uuid v1.6.0
 	go.opentelemetry.io/otel v1.23.1
