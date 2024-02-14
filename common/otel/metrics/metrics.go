@@ -20,13 +20,13 @@ func NewStdoutMetricExporter() (sdkmetric.Exporter, error) {
 	return exporter, err
 }
 
-func NewOTLPMetricExporter(ctx context.Context, otlpEndpoint string, reqTimeout time.Duration) (*otlpmetrichttp.Exporter, error) {
+func NewOTLPMetricExporter(ctx context.Context, otlpEndpoint string, exportTimeout time.Duration) (*otlpmetrichttp.Exporter, error) {
 	exporter, err := otlpmetrichttp.New(ctx,
 		otlpmetrichttp.WithRetry(otlpmetrichttp.RetryConfig{
 			Enabled:        true,
 			MaxElapsedTime: time.Minute,
 		}),
-		otlpmetrichttp.WithTimeout(reqTimeout),
+		otlpmetrichttp.WithTimeout(exportTimeout),
 		otlpmetrichttp.WithEndpoint(otlpEndpoint),
 		otlpmetrichttp.WithInsecure(),
 	)

@@ -20,13 +20,13 @@ func NewStdoutTraceExporter() (*stdouttrace.Exporter, error) {
 	return exporter, err
 }
 
-func NewOTLPTraceExporter(ctx context.Context, otlpEndpoint string) (*otlptrace.Exporter, error) {
+func NewOTLPTraceExporter(ctx context.Context, otlpEndpoint string, exportTimeout time.Duration) (*otlptrace.Exporter, error) {
 	exporter, err := otlptracehttp.New(ctx,
 		otlptracehttp.WithRetry(otlptracehttp.RetryConfig{
 			Enabled:        true,
 			MaxElapsedTime: time.Minute,
 		}),
-		otlptracehttp.WithTimeout(time.Second),
+		otlptracehttp.WithTimeout(exportTimeout),
 		otlptracehttp.WithInsecure(),
 		otlptracehttp.WithEndpoint(otlpEndpoint),
 	)
