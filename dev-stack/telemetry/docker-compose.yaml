@@ -1,0 +1,83 @@
+services:
+  grafana:
+    image: "docker.io/grafana/grafana:10.3.1"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_USERS_DEFAULT_THEME=dark
+      - GF_METRICS_ENABLED=true
+    volumes:
+      - ./config/grafana-provisioning-datasources.yaml:/etc/grafana/provisioning/datasources/provisioning-datasources.yaml:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - tempo
+      - prometheus
+    restart: "unless-stopped"
+  tempo:
+    image: "docker.io/grafana/tempo:2.3.1"
+    command:
+      - "-config.file=/etc/tempo.yaml"
+    volumes:
+      - ./config/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo-data:/tmp/tempo
+    ports:
+      - "3200:3200"
+      - "4318:4318"
+    restart: "unless-stopped"
+  prometheus:
+    image: "docker.io/prom/prometheus:v2.49.1"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
+    volumes:
+      - "./config/prometheus.yaml:/etc/prometheus/prometheus.yml:ro"
+      - "prometheus-data:/prometheus"
+    ports:
+      - "9090:9090"
+    restart: "unless-stopped"
+  loki-helper:
+    image: "docker.io/library/alpine:latest"
+    restart: no
+    volumes:
+      - "loki-data:/tmp/loki"
+    command:
+      - chown
+      - -R
+      - 10001:10001
+      - /tmp/loki
+  loki:
+    image: "docker.io/grafana/loki:2.9.4"
+    command:
+      - "-config.file=/etc/loki.yaml"
+    volumes:
+      - "./config/loki.yaml:/etc/loki.yaml:ro"
+      - "loki-data:/tmp/loki"
+    ports:
+      - "3100:3100"
+    restart: "unless-stopped"
+  otlp-collector:
+    image: "docker.io/otel/opentelemetry-collector-contrib:0.93.0"
+    command:
+      - --config=/etc/otelcol-contrib/config.yaml
+    volumes:
+      - "./config/otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro"
+    ports:
+      - 14317:4317
+      - 14318:4318
+      - 12001:12001
+      - 12002:12002
+      - 12003:12003
+      - 18888:8888
+    depends_on:
+      - "tempo"
+      - "prometheus"
+      - "loki"
+    restart: "unless-stopped"
+volumes:
+  grafana-data: {}
+  tempo-data: {}
+  prometheus-data: {}
+  loki-data: {}

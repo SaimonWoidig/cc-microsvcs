@@ -1,0 +1,80 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+
+processors:
+  remotetap/traces:
+    limit: 1
+    endpoint: ":12001"
+  remotetap/metrics:
+    limit: 1
+    endpoint: ":12002"
+  remotetap/logs:
+    limit: 1
+    endpoint: ":12003"
+  batch:
+    timeout: 1s
+  memory_limiter:
+    check_interval: 1s
+    limit_percentage: 50
+    spike_limit_percentage: 30
+  metricstransform/addlabel:
+    transforms:
+      - include: ^.*$
+        match_type: regexp
+        action: update
+        operations:
+          - action: add_label
+            new_label: "otlp-collector"
+            new_value: "{{version}}"
+
+exporters:
+  otlphttp:
+    traces_endpoint: "http://tempo:4318/v1/traces"
+    tls:
+      insecure: true
+  prometheusremotewrite:
+    endpoint: http://prometheus:9090/api/v1/write
+    tls:
+      insecure: true
+  debug:
+    verbosity: detailed
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+
+service:
+  telemetry:
+    logs:
+      level: INFO
+    metrics:
+      level: detailed
+  pipelines:
+    traces:
+      receivers:
+        - otlp
+      processors:
+        - memory_limiter
+        - remotetap/traces
+        - batch
+      exporters:
+        - otlphttp
+    metrics:
+      receivers:
+        - otlp
+      processors:
+        - memory_limiter
+        - remotetap/metrics
+        - metricstransform/addlabel
+        - batch
+      exporters:
+        - prometheusremotewrite
+    logs:
+      receivers:
+        - otlp
+      processors:
+        - memory_limiter
+        - remotetap/logs
+        - batch
+      exporters:
+        - loki
